@@ -1,0 +1,2 @@
+[console_scripts]
+github_to_freshdesk = src.main:main

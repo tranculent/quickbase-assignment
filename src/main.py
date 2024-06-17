@@ -12,11 +12,8 @@ def get_github_user_info(username):
 
     url = f'https://api.github.com/users/{username}'
     headers = {'Authorization': f'token {github_token}'}
-    print(f"Fetching GitHub user data for {username} with URL: {url}")
 
     response = requests.get(url, headers=headers)
-    print(f"Response Status Code: {response.status_code}")
-    print(f"Response Text: {response.text}")
     if response.status_code != 200:
        raise Exception(f"Failed to fetch GitHub user data: {response.status_code} {response.text}")
        sys.exit(1)
@@ -33,7 +30,7 @@ def create_or_update_freshdesk_contact(subdomain, contact_data):
     # Content type is specified because we are passing request body (the freshdesk contact's data)
     headers = {'Content-Type': 'application/json'}
     auth = HTTPBasicAuth(freshdesk_token, 'X')
-
+    
     # Check if contact exists
     search_url = f'https://{subdomain}.freshdesk.com/api/v2/search/contacts?query="email:{contact_data["email"]}"'
     search_response = requests.get(search_url, headers=headers, auth=auth)

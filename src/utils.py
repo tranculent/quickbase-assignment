@@ -7,5 +7,5 @@ def map_github_user_to_freshdesk_contact(github_user):
         "unique_external_id": github_user.get("id"),
         "description": github_user.get("bio")
     }
-    return {k: v for k, v in contact if v}
+    return {k: v for k, v in contact.items() if v}
 
