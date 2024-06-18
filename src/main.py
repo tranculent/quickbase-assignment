@@ -41,7 +41,7 @@ def create_or_update_freshdesk_contact(subdomain, contact_data):
 
     search_results = search_response.json()
     if search_results['total'] > 0:
-        print(f'Updating user {contact_data["email"]..')
+        print(f'Updating user {contact_data["email"]}..')
         contact_id = search_results['results'][0]['id']
         update_url = f'{url}/{contact_id}'
         response = requests.put(update_url, json=contact_data, headers=headers, auth=auth)

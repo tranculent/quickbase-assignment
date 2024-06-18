@@ -91,5 +91,104 @@ class TestMain(unittest.TestCase):
             auth=HTTPBasicAuth(freshdesk_token, 'X'),
             headers={'Content-Type': 'application/json'}
         )
+
+    @patch('src.main.requests.get')
+    def test_get_github_user_info_not_found(self, mock_get):
+        mock_response = Mock()
+        mock_response.status_code = 404
+        mock_get.return_value = mock_response
+
+        with self.assertRaises(Exception):
+            get_github_user_info("nonexistent_user")
+    
+    @patch('src.main.requests.get')
+    def test_get_github_user_info_error(self, mock_get):
+        mock_response = Mock()
+        mock_response.status_code = 500
+        mock_get.return_value = mock_response
+
+        with self.assertRaises(Exception):
+            get_github_user_info("tranculent")
+
+    @patch('src.main.requests.post')
+    @patch('src.main.requests.put')
+    @patch('src.main.requests.get')
+    def test_create_or_update_freshdesk_contact_no_token(self, mock_get, mock_put, mock_post):
+        contact = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "unique_external_id": 123
+        }
+        freshdesk_subdomain = "example"
+        
+        with patch.dict('os.environ', {'FRESHDESK_TOKEN': ''}):
+            with self.assertRaises(SystemExit):
+                create_or_update_freshdesk_contact(freshdesk_subdomain, contact)
+
+    @patch('src.main.requests.post')
+    @patch('src.main.requests.put')
+    @patch('src.main.requests.get')
+    def test_create_or_update_freshdesk_contact_search_error(self, mock_get, mock_put, mock_post):
+        contact = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "unique_external_id": 123
+        }
+        freshdesk_subdomain = "example"
+
+        mock_search_response = Mock()
+        mock_search_response.status_code = 500
+        mock_get.return_value = mock_search_response
+
+        with self.assertRaises(SystemExit):
+            create_or_update_freshdesk_contact(freshdesk_subdomain, contact)
+
+    @patch('src.main.requests.post')
+    @patch('src.main.requests.put')
+    @patch('src.main.requests.get')
+    def test_create_or_update_freshdesk_contact_create_error(self, mock_get, mock_put, mock_post):
+        contact = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "unique_external_id": 123
+        }
+        freshdesk_subdomain = "example"
+
+        mock_search_response = Mock()
+        mock_search_response.json.return_value = {"total": 0}
+        mock_search_response.status_code = 200
+        mock_get.return_value = mock_search_response
+
+        mock_post_response = Mock()
+        mock_post_response.status_code = 500
+        mock_post.return_value = mock_post_response
+
+        with self.assertRaises(SystemExit):
+            create_or_update_freshdesk_contact(freshdesk_subdomain, contact)
+
+    @patch('src.main.requests.post')
+    @patch('src.main.requests.put')
+    @patch('src.main.requests.get')
+    def test_create_or_update_freshdesk_contact_update_error(self, mock_get, mock_put, mock_post):
+        contact = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "unique_external_id": 123
+        }
+        freshdesk_subdomain = "example"
+        freshdesk_token = os.getenv('FRESHDESK_TOKEN')
+
+        mock_search_response = Mock()
+        mock_search_response.json.return_value = {"total": 1, "results": [{"id": 1}]}
+        mock_search_response.status_code = 200
+        mock_get.return_value = mock_search_response
+
+        mock_put_response = Mock()
+        mock_put_response.status_code = 500
+        mock_put.return_value = mock_put_response
+
+        with self.assertRaises(SystemExit):
+            create_or_update_freshdesk_contact(freshdesk_subdomain, contact)
+
 if __name__ == '__main__':
     unittest.main()
