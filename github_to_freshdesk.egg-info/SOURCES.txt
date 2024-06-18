@@ -1,8 +1,0 @@
-README.md
-setup.py
-github_to_freshdesk.egg-info/PKG-INFO
-github_to_freshdesk.egg-info/SOURCES.txt
-github_to_freshdesk.egg-info/dependency_links.txt
-github_to_freshdesk.egg-info/entry_points.txt
-github_to_freshdesk.egg-info/requires.txt
-github_to_freshdesk.egg-info/top_level.txt

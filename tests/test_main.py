@@ -1,12 +1,13 @@
 import os
 import unittest
 from unittest.mock import patch, Mock
-import src.main as main
 from requests.auth import HTTPBasicAuth
+from src.main import create_or_update_freshdesk_contact, get_github_user_info
+from src.utils import map_github_user_to_freshdesk_contact
 
 class TestMain(unittest.TestCase):
     def test_get_github_user_info(self):
-        github_user_info = main.get_github_user_info("tranculent")
+        github_user_info = get_github_user_info("tranculent")
         self.assertEqual(github_user_info['name'], 'Yanko Mirov')
         self.assertEqual(github_user_info['id'], 45804656)
         self.assertEqual(github_user_info['blog'], "https://javatutorial.net/author/ym_coding")
@@ -28,9 +29,10 @@ class TestMain(unittest.TestCase):
             "unique_external_id": 123,
             "description": "A GitHub user"
         }
-        result = main.map_github_user_to_freshdesk_contact(github_user)
+        result = map_github_user_to_freshdesk_contact(github_user)
         self.assertEqual(result, expected_contact)
 
+    # Mock all request functions
     @patch('src.main.requests.post')
     @patch('src.main.requests.put')
     @patch('src.main.requests.get')
@@ -42,6 +44,7 @@ class TestMain(unittest.TestCase):
         }
         freshdesk_subdomain = "example"
         freshdesk_token = os.getenv('FRESHDESK_TOKEN')
+        
         # Simulate no existing contact
         mock_search_response = Mock()
         mock_search_response.json.return_value = {"total": 0}
@@ -53,8 +56,17 @@ class TestMain(unittest.TestCase):
         mock_post_response.status_code = 201  # Set status code for successful creation
         mock_post.return_value = mock_post_response
 
-        result = main.create_or_update_freshdesk_contact(freshdesk_subdomain, contact)
+        result = create_or_update_freshdesk_contact(freshdesk_subdomain, contact)
         self.assertEqual(result, {"id": 1})
+
+        # Assert GET request for search
+        mock_get.assert_called_once_with(
+            f'https://{freshdesk_subdomain}.freshdesk.com/api/v2/search/contacts?query="email:{contact["email"]}"',
+            headers={'Content-Type': 'application/json'},
+            auth=HTTPBasicAuth(freshdesk_token, 'X')
+        )
+
+        # Assert POST request for creating contact
         mock_post.assert_called_once_with(
             f'https://{freshdesk_subdomain}.freshdesk.com/api/v2/contacts',
             json=contact,
@@ -69,14 +81,15 @@ class TestMain(unittest.TestCase):
         mock_put_response.status_code = 200  # Set status code for successful update
         mock_put.return_value = mock_put_response
 
-        result = main.create_or_update_freshdesk_contact(freshdesk_subdomain, contact)
+        result = create_or_update_freshdesk_contact(freshdesk_subdomain, contact)
         self.assertEqual(result, {"id": 1})
+
+        # Assert PUT request for updating contact
         mock_put.assert_called_once_with(
             f'https://{freshdesk_subdomain}.freshdesk.com/api/v2/contacts/1',
             json=contact,
             auth=HTTPBasicAuth(freshdesk_token, 'X'),
             headers={'Content-Type': 'application/json'}
         )
-
 if __name__ == '__main__':
     unittest.main()
