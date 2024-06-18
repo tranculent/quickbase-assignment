@@ -14,6 +14,29 @@ To install all requirements, run:
 pip install -r requirements.txt
 ```
 
+## Setting Environment Variables
+
+Before running the program or tests, you need to set the GitHub and Freshdesk tokens as environment variables. You can use the provided `set_env.bat` script for this purpose.
+
+1. Open `set_env.bat` and replace the placeholders with your actual tokens:
+    ```bat
+    $env:GITHUB_TOKEN=your_github_token_here
+    $env:FRESHDESK_TOKEN=your_freshdesk_token_here
+    ```
+
+2. Run the script to set the environment variables:
+    ```sh
+    set_env.bat
+    ```
+
+Alternatively, you can set the environment variables directly in your shell:
+
+### Windows (PowerShell)
+```sh
+$env:GITHUB_TOKEN=your_github_token_here
+$env:FRESHDESK_TOKEN=your_freshdesk_token_here
+```
+
 ## Installation
 
 1. Clone this repository.
@@ -23,7 +46,7 @@ pip install -r requirements.txt
 
 After installation, you can run the script from the command line:
 ```sh
-python main.py <github_username> <freshdesk_subdomain>
+python src/main.py <github_username> <freshdesk_subdomain>
 ```
 
 ## Run tests
